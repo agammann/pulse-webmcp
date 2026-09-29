@@ -15,8 +15,15 @@ function removeExpiredWindows(now: number) {
   }
 }
 
-export function mutationRateLimit(request: Request, limit = 30, windowMs = 60_000) {
-  const forwarded = request.headers.get('cf-connecting-ip') ?? request.headers.get('x-forwarded-for') ?? 'anonymous';
+export function mutationRateLimit(
+  request: Request,
+  limit = 30,
+  windowMs = 60_000,
+) {
+  const forwarded =
+    request.headers.get('cf-connecting-ip') ??
+    request.headers.get('x-forwarded-for') ??
+    'anonymous';
   const key = forwarded.split(',')[0].trim();
   const now = Date.now();
   removeExpiredWindows(now);
@@ -26,7 +33,10 @@ export function mutationRateLimit(request: Request, limit = 30, windowMs = 60_00
     return null;
   }
   if (current.count >= limit) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil((current.resetAt - now) / 1000),
+    );
     return Response.json(
       { ok: false, error: 'Too many repair updates. Please wait a moment.' },
       { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },

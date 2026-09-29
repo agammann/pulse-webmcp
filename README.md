@@ -1,156 +1,101 @@
 # Pulse
 
-> The open repair memory for humans and agents.
+**A public repair journal for people and browser agents.** Record a problem, proposed checks, human observations, attempted fixes, and the final outcome. Search the saved history later. Every step works through ordinary forms; compatible agents can use the same database through ten WebMCP tools.
 
-Pulse is a public repair evidence network where people test fixes in the physical world and AI agents preserve what actually worked through WebMCP.
+[Open Pulse](https://pulse.alx21.chatgpt.site/) · [Browse examples](https://pulse.alx21.chatgpt.site/repairs?source=examples) · [Start a repair](https://pulse.alx21.chatgpt.site/repair/new) · [Agent guide](WEBMCP_TESTING.md)
 
-- Live application: https://pulse.alx21.chatgpt.site
-- Source repository: https://github.com/agammann/pulse-webmcp
+![Pulse repair journal](docs/pulse-desktop.png)
 
-![Pulse social preview](public/og.png)
+## Use it
 
-## Why WebMCP
+1. Search community cases by product, symptom, outcome, or difficulty. Switch **Record source** to **Examples / practice** to explore fictional records.
+2. Choose **Start a Repair**. Describe the object and the observed problem, then select its safety classification. Select **practice case** when trying fictional data.
+3. Open the case. Use **Continue this case** to propose a check, record an observation, and document an attempt and its parts/cost.
+4. Record the outcome, total cost in USD, whole minutes spent, and notes. Failures and professional-service decisions are useful outcomes too. Saving an outcome replaces the previous outcome; checks and attempts remain.
+5. Reload to verify the saved evidence. Use **Export case JSON** for a readable backup.
 
-Most websites force an agent to reverse-engineer a visual interface. Pulse exposes the real application capabilities instead. A compatible browser can discover ten imperative tools through `document.modelContext.registerTool(...)`, validate typed inputs, and receive compact structured results without scraping the DOM.
+Everything submitted is **public**. Avoid personal information and serial numbers. The browser that creates a case receives an opaque, HttpOnly edit cookie; the server stores only its hash. Keep the same browser profile and cookies to continue editing. Clearing cookies or moving to another device removes editing access. There is no account, recovery flow, edit-key export, or public delete action. Existing cases created before browser ownership was introduced remain readable without an edit-claim mechanism.
 
-The WebMCP layer is not a second demo API: every tool calls the same persisted application routes used by the human interface. Mutations create visible repair history and write to the activity log.
+Reading, searching, and exporting are public. Other visitors can leave self-reported feedback, counted once per feedback type per browser. This is not a verified identity or reputation system.
 
-## Human + agent workflow
+## Honest evidence
 
-1. A human describes a broken object.
-2. The agent searches structured repair evidence and compares fixed, improved, and failed outcomes.
-3. The agent creates a case and proposes a safe diagnostic step.
-4. The human performs the physical test and reports the observation.
-5. The agent records the result and, when appropriate, the repair attempt and outcome.
-6. Pulse makes that evidence available to the next human-agent pair.
+- The database starts with 30 clearly labeled **fictional examples**. New practice cases are labeled and separated with them.
+- Search defaults to community cases. Examples require the source filter; tool results include their source.
+- Dashboard and homepage community totals exclude examples and practice. Outcomes are contributor reports, not independently verified physical repairs.
+- Success rate is fixed/improved cases divided by all cases with an outcome. Open cases are excluded from that denominator. No outcomes means no rate.
+- Median cost uses recorded outcome costs. Each case shows its actual recorded cost/time, with no invented price range.
+- Database failures show an error instead of substituting fictional evidence. Statistics cover all saved cases. Search returns up to 50 matches; common-failure summaries explicitly describe their sample of up to 50 matching community cases.
 
-The AI does information work. The human interacts with the physical object. Pulse remembers the result.
+Pulse organizes repair records; it does not diagnose an object or generate repair advice by itself. People supply physical observations. Cases classified **professional recommended** accept history and reported outcomes, but the server refuses new procedural diagnostic steps. Classification is contributor-supplied and is not a safety certification.
 
-## Product surfaces
+## WebMCP
 
-- `/` — landing page and evidence-led product story
-- `/repairs` — weighted repair search and filters
-- `/repairs/[id]` — complete diagnostic timeline, attempts, outcome, safety, and votes
-- `/repair/new` — human-facing case creation
-- `/dashboard` — community statistics and recent repairs
-- `/webmcp` — live tool registry, permission model, and judge prompts
-- `/about` — open repair mission and human-agent model
+The page registers tools through `document.modelContext.registerTool`, with a compatibility fallback for `navigator.modelContext`. Browsers without the API show a clear status and retain the full form workflow. No provider key or paid model is required by Pulse; an agent is optional and supplied by the visitor's browser.
 
-The app ships with 30 clearly labeled synthetic repair cases across game controllers, keyboards, computer peripherals, small electronics, bicycles, home-office equipment, and cables. They include overlapping symptoms, different outcomes, costs, times, and community evidence so search results are meaningful on first load.
+| Tool                    | What it does                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| `search_repairs`        | Search community cases; optionally request examples or all records                   |
+| `get_repair_case`       | Read the complete history, outcome notes, source, and this browser's edit permission |
+| `create_repair_case`    | Publish a case; `practice: true` marks fictional data                                |
+| `add_diagnostic_step`   | Propose a check on a case this browser owns; blocked for professional-risk cases     |
+| `add_diagnostic_result` | Save a person's reported observation against a step                                  |
+| `record_repair_attempt` | Record an attempted fix, parts, cost, and difficulty                                 |
+| `record_repair_outcome` | Save or correct the current reported outcome                                         |
+| `mark_case_helpful`     | Save helpful/worked-for-me/did-not-work feedback once per type and browser           |
+| `list_common_failures`  | Summarize up to 50 matching community cases, with sample size disclosed              |
+| `get_repair_statistics` | Read community totals and the separate example/practice count                        |
 
-## Machine-readable discovery
+Tool responses are complete JSON, not strings cut at an arbitrary character limit. Community text is untrusted data. Tool metadata is static; input schemas and server validation enforce field limits. UI and tool writes share the same HTTP handlers, ownership checks, and D1 database. Agents can record only observations supplied by a person; use practice cases for fictional exercises.
 
-- `/robots.txt` publishes a crawler policy and points to the sitemap.
-- `/sitemap.xml` lists the stable public product and repair surfaces.
-- `/llms.txt` summarizes Pulse's public content, safety boundaries, data provenance, and agent interface.
-- Canonical metadata and Schema.org `WebApplication` JSON-LD identify the production application and public source repository.
+## Run locally
 
-These discovery resources describe the site; they do not replace WebMCP. Compatible browsers discover and invoke the live page-side tools registered on `document.modelContext`.
+Use Node.js 24 and pnpm 11.19.0 (the versions used in CI).
 
-## Architecture
-
-```text
-Human UI (React / Next.js routes)       WebMCP agent tools
-                 \                      /
-                  \                    /
-                  Next route handlers
-                           |
-              validation + rate limiting
-                           |
-                   Cloudflare D1 (SQL)
-                           |
-          cases, steps, attempts, outcomes,
-             votes, products, agent activity
-```
-
-- **UI:** Next.js-compatible React application built by Vinext, TypeScript, Tailwind CSS
-- **Runtime:** OpenAI Sites on a Cloudflare Worker
-- **Persistence:** Cloudflare D1 with relational schema and packaged migrations
-- **Search:** deterministic weighted ranking over exact model, brand, category, symptoms, outcome, and community evidence
-- **Agent interface:** current imperative WebMCP API with a feature-detected `navigator.modelContext` fallback
-- **Dependencies:** no OpenAI API key and no client-side AI simulation
-
-## WebMCP tools
-
-| Tool | Mode | Capability |
-| --- | --- | --- |
-| `search_repairs` | Read | Search by text, category, brand, model, symptom, outcome, difficulty, and limit |
-| `get_repair_case` | Read | Retrieve one complete structured repair history |
-| `create_repair_case` | Mutate | Create a public repair case and return its ID |
-| `add_diagnostic_step` | Mutate | Add a proposed non-destructive diagnostic test |
-| `add_diagnostic_result` | Mutate | Record the human's observed result and notes |
-| `record_repair_attempt` | Mutate | Record a fix attempt, parts, cost, and difficulty |
-| `record_repair_outcome` | Mutate | Record final outcome, fix, cost, time, and notes |
-| `mark_case_helpful` | Mutate | Add helpful, worked-for-me, or did-not-work evidence |
-| `list_common_failures` | Read | Aggregate common failures and successful solutions |
-| `get_repair_statistics` | Read | Retrieve public totals, categories, and recent successes |
-
-Each definition contains explicit JSON Schema, required fields, bounded input lengths, read-only annotations where appropriate, and `untrustedContentHint` for community content. Outputs are deliberately compact for agent use.
-
-## Local installation
-
-Requirements: Node.js 22.13+ and pnpm.
-
-```bash
+```sh
 git clone https://github.com/agammann/pulse-webmcp.git
-cd pulse
-pnpm install
+cd pulse-webmcp
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open `http://localhost:3000`. No environment variables or user account are required. In a standard browser, the full human interface continues to work and the activity dock reports that WebMCP was not detected.
+Open the URL printed by the dev server. The Cloudflare plugin provides local D1 storage under `.wrangler/`; no API key is needed. Empty databases initialize the schema and example corpus automatically.
 
-## Database and seed data
+To run the built Worker:
 
-The D1 binding is named `DB` in `.openai/hosting.json`. The canonical Drizzle schema is in `db/schema.ts`; deployable SQL is in `drizzle/0000_pulse.sql`.
-
-On the first database-backed request, `ensureDatabase()` applies idempotent table/index creation and seeds the 30 demo cases if the database is empty. Seed source lives in `lib/seed-data.ts`. Every demo record is marked `demo_record: true` in API output and the interface.
-
-No `.env` values are required. `.env.example` documents the zero-secret setup.
-
-## Development commands
-
-```bash
-pnpm dev          # local app
-pnpm test         # workflow, contract, discovery, and security-baseline tests
-pnpm lint         # static linting
-pnpm build        # production worker build
+```sh
+pnpm build
+pnpm start --port 3015
 ```
 
-The automated suite covers search, retrieval, case creation, diagnostic-step creation, diagnostic-result recording, outcome recording, validation failures, WebMCP contracts, discovery resources, and the response-header baseline. See [WEBMCP_TESTING.md](WEBMCP_TESTING.md) for browser and judge testing.
+The public site uses the same build with a durable D1 binding named `DB`, declared in `.openai/hosting.json`. Local D1 is separate from the public database. Sites deploys `dist/` from a source commit; GitHub Actions verifies source changes but does not deploy them automatically. Hosting a separate copy requires your own compatible Cloudflare/Sites environment and may have hosting costs.
 
-## Security and repair safety
+## Verify changes
 
-Community repair text is untrusted data, never trusted tool metadata or agent instruction. Inputs are constrained in both WebMCP JSON Schema and server handlers. Mutation routes validate values, apply basic per-IP rate limiting, and return safe errors. There is no delete tool. Production responses also set a same-origin Content Security Policy, HSTS, MIME-sniffing protection, a strict referrer policy, and a restrictive browser permissions policy.
+```sh
+pnpm test
+pnpm lint
+pnpm typecheck
+pnpm exec playwright install chromium
+pnpm build
+pnpm test:e2e
+```
 
-Every repair is classified as low risk, moderate risk, or professional recommended. Professional-risk histories remain readable, but Pulse refuses procedural diagnostic-step creation and directs the user to qualified service. See [SECURITY.md](SECURITY.md) for the complete trust model and reporting process.
+Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. A test-only registry captures adapters in Playwright; this is separate from native WebMCP verification in a compatible browser.
 
-## Open repair data
+## Source map
 
-Pulse's concepts are inspired by the Open Repair Data Standard: product identity, problem, repair status, barriers, and outcome are explicit data rather than prose fragments. Pulse is an independent project and does not claim affiliation with the Open Repair Alliance.
+- `app/api/` — shared HTTP reads and writes
+- `lib/database.ts` — D1 state and additive schema initialization
+- `lib/session.ts`, `lib/access.ts` — browser edit key and write boundary
+- `lib/validation.ts`, `lib/tool-input.ts` — server and tool input checks
+- `lib/search.ts`, `lib/statistics.ts` — deterministic ranking and reported totals
+- `components/repair-editor.tsx` — manual journal forms
+- `components/webmcp-provider.tsx`, `lib/webmcp-contracts.ts` — native registration and ten contracts
+- `drizzle/0000_pulse.sql`, `drizzle/0001_browser_editors.sql` — initial and additive schemas; runtime uses idempotent creation
 
-## Judge demo
+## Limits
 
-Open the deployed site in ChatGPT's in-app browser and ask:
+Pulse has no contributor accounts, moderation dashboard, cross-device editing, or deletion UI. Rate limiting is basic and instance-local. Browser cookies limit accidental duplicate feedback; clearing them can create a new voter identity. Outcome corrections replace the current outcome rather than preserving revisions. Search is a deterministic in-memory ranking over loaded case rows, suited to a small collection. Public case text and safety classifications are self-reported.
 
-1. “Search Pulse for controller stick drift.”
-2. “Show me the most successful fixes.”
-3. “Create a repair case for a controller with left-stick drift.”
-4. “Add a diagnostic step to inspect the joystick for contamination.”
-5. “Record that cleaning did not fix the issue.”
-6. “Record the final repair as fixed.”
-7. “Show me Pulse's repair statistics.”
-
-Watch the visible Agent Activity panel and repair timeline update as tools run.
-
-## Deployment
-
-The production output is built with `pnpm build` and packaged with its D1 migration for OpenAI Sites. The public deployment does not require authentication. Deployment provenance is a saved immutable site version tied to the repository commit.
-
-## Hackathon
-
-Built for the OpenAI WebMCP Challenge. Pulse uses the challenge's current imperative WebMCP API and is designed to demonstrate real human-agent collaboration over durable shared state.
-
-## License
-
-MIT © 2026 Pulse contributors. See [LICENSE](LICENSE).
+MIT licensed. See [LICENSE](LICENSE) and [security and safety policy](SECURITY.md).

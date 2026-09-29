@@ -1,5 +1,16 @@
-export const SAFETY_LEVELS = ['low_risk', 'moderate_risk', 'professional_recommended'] as const;
-export const OUTCOMES = ['fixed', 'improved', 'not_fixed', 'professional_repair_required', 'replacement_required', 'abandoned'] as const;
+export const SAFETY_LEVELS = [
+  'low_risk',
+  'moderate_risk',
+  'professional_recommended',
+] as const;
+export const OUTCOMES = [
+  'fixed',
+  'improved',
+  'not_fixed',
+  'professional_repair_required',
+  'replacement_required',
+  'abandoned',
+] as const;
 export const DIFFICULTIES = ['easy', 'moderate', 'advanced'] as const;
 export const VOTE_TYPES = ['helpful', 'worked_for_me', 'did_not_work'] as const;
 
@@ -57,6 +68,7 @@ export type RepairCase = {
   safety_classification: SafetyClassification;
   difficulty: Difficulty;
   demo_record: boolean;
+  attempt_count?: number;
   created_at: string;
   updated_at: string;
   diagnostic_steps: DiagnosticStep[];
@@ -73,8 +85,8 @@ export type RepairSearchResult = RepairCase & {
     fixed: number;
     improved: number;
     did_not_work: number;
-    median_time_minutes: number;
-    typical_cost: string;
+    recorded_time_minutes: number;
+    recorded_cost: string;
   };
 };
 
@@ -87,17 +99,19 @@ export type AgentActivity = {
   created_at: string;
 };
 
-export const safetyLabel = (value: SafetyClassification) => ({
-  low_risk: 'Low risk',
-  moderate_risk: 'Moderate risk',
-  professional_recommended: 'Professional recommended',
-})[value];
+export const safetyLabel = (value: SafetyClassification) =>
+  ({
+    low_risk: 'Low risk',
+    moderate_risk: 'Moderate risk',
+    professional_recommended: 'Professional recommended',
+  })[value];
 
-export const outcomeLabel = (value: RepairOutcome) => ({
-  fixed: 'Fixed',
-  improved: 'Improved',
-  not_fixed: 'Not fixed',
-  professional_repair_required: 'Professional repair required',
-  replacement_required: 'Replacement required',
-  abandoned: 'Abandoned',
-})[value];
+export const outcomeLabel = (value: RepairOutcome) =>
+  ({
+    fixed: 'Fixed',
+    improved: 'Improved',
+    not_fixed: 'Not fixed',
+    professional_repair_required: 'Professional repair required',
+    replacement_required: 'Replacement required',
+    abandoned: 'Abandoned',
+  })[value];

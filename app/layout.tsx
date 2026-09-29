@@ -4,22 +4,39 @@ import { WebMcpProvider } from '@/components/webmcp-provider';
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pulse.alx21.chatgpt.site'),
   title: 'Pulse — The open repair memory',
-  description: 'Search real repair outcomes, troubleshoot with your AI agent, and contribute what worked back to the open web.',
+  description:
+    'Keep a public repair journal, search reported outcomes, and record observations with ordinary forms or WebMCP.',
   applicationName: 'Pulse',
   alternates: { canonical: '/' },
-  keywords: ['repair evidence', 'right to repair', 'WebMCP', 'human in the loop', 'AI agents'],
+  keywords: [
+    'repair evidence',
+    'right to repair',
+    'WebMCP',
+    'human in the loop',
+    'AI agents',
+  ],
   openGraph: {
     title: 'Pulse — The open repair memory',
     description: 'Humans test the fix. Agents remember what worked.',
     type: 'website',
     url: '/',
     siteName: 'Pulse',
-    images: [{ url: '/og.png', width: 1536, height: 1024, alt: 'Pulse repair evidence network' }],
+    images: [
+      {
+        url: '/og.png',
+        width: 1536,
+        height: 1024,
+        alt: 'Pulse repair evidence network',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -48,7 +65,9 @@ const structuredData = {
   ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <head>
@@ -57,7 +76,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
         <WebMcpProvider />
       </body>

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # unused scaffold-only component library; Pulse uses purpose-built components
 /components/ui/
+
+/test-results/
+/playwright-report/

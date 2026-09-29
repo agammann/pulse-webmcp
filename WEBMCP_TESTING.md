@@ -1,63 +1,27 @@
-# WebMCP testing guide
+# Pulse browser and WebMCP verification
 
-## Fast judge path
+## Ordinary browser
 
-1. Open the deployed Pulse URL in ChatGPT's in-app browser.
-2. Ask: **“What WebMCP tools does this site expose?”** Confirm that ten tools are discoverable.
-3. Ask: **“Search Pulse for game controller stick drift repairs.”** Confirm structured matches include repair evidence and safety classification.
-4. Ask: **“Open the most successful matching repair and tell me what people tried.”** Confirm a complete case is returned.
-5. Ask: **“Create a new repair case for a controller with left-stick drift.”** Confirm a new `MS-...` ID and visible case appear.
-6. Ask: **“Add a diagnostic step to inspect the joystick for contamination.”** Confirm the timeline updates.
-7. Physically test or use the demo observation, then ask: **“Record that cleaning did not fix the issue.”** Confirm the observation appears in the same timeline.
-8. Ask: **“Record the final repair as fixed. The final fix was replacing the joystick module, cost $12, took 35 minutes.”** Confirm the case status becomes Fixed.
-9. Ask: **“Show me Pulse's repair statistics.”** Confirm the aggregate result reflects persisted data.
+Create a case with the practice checkbox selected. Add a diagnostic check, record its observation, record an attempt, and save an outcome with notes. Reload, verify every field, and download its JSON export. Open the case in a separate browser profile: it stays readable, but editing is unavailable. The original browser retains editing access while its cookie remains.
 
-Keep the Agent Activity dock expanded during steps 3–9. It should make the active tool and resulting state change visible.
+Practice and seeded examples are public fictional records. They appear under **Examples / practice** and do not increase community totals. A professional-recommended practice case should omit the proposed-check form and reject that write on the server while still accepting a reported outcome.
 
-## Chrome setup
+## Native WebMCP
 
-Use Chrome 149 or newer. In builds where WebMCP is still experimental:
+Open [Pulse](https://pulse.alx21.chatgpt.site/) in a browser and agent that support WebMCP. Expand the activity dock and check that ten tools registered. The implementation follows the [WebMCP imperative API](https://github.com/webmachinelearning/webmcp/blob/main/README.md). Browser support changes; absence of the API is shown explicitly and does not disable forms.
 
-1. Open `chrome://flags/#enable-webmcp-testing`.
-2. Enable the WebMCP testing flag and relaunch Chrome.
-3. Open the deployed Pulse site.
-4. Open DevTools and use the WebMCP testing/agent surface available in that Chrome build.
-5. Inspect the registered tools and call `search_repairs` with `{ "query": "controller stick drift", "limit": 5 }`.
+1. Call `search_repairs` with `{ "source": "examples", "query": "controller stick drift", "limit": 5 }`. Check that each result identifies fictional/example provenance.
+2. Call `get_repair_case` with a returned ID. Check complete JSON, all steps, attempts, outcome fields, and `can_edit`.
+3. Call `create_repair_case` with a clearly fictional desk-accessory example and **`practice: true`**. Supply category, brand, model, product_name, problem_description, symptoms, and safety_classification.
+4. Open the returned case page. On this new practice case, call `add_diagnostic_step`, `add_diagnostic_result`, `record_repair_attempt`, and `record_repair_outcome` with fictional text explicitly labeled as such. For real cases, record only what a person actually reported.
+5. Verify the visible timeline after each change. Reload and retrieve it again to prove durable state, not just a UI update.
+6. Call `mark_case_helpful` twice with the same type. Its count should increase only once for this browser.
+7. Call `list_common_failures` and `get_repair_statistics`. The sample limit is disclosed, and the new practice case affects only the separate example count.
 
-The page's bottom-right status dock must display either **WebMCP available** or **WebMCP not detected · human interface remains available**. The latter is expected in browsers without the experimental API and is not a page failure.
+Use the registered schemas for required fields and limits. Agents share the browser cookie and cannot edit cases owned by other browsers. Reads and exports reveal no edit key or stored hash.
 
-Static site scanners can verify `/robots.txt`, `/sitemap.xml`, `/llms.txt`, canonical metadata, and JSON-LD, but they cannot prove that the browser exposed the experimental WebMCP API or that a registered mutation changed durable state. Use the live tool path above as the authoritative WebMCP test.
+## Automated checks
 
-## Tool-by-tool checks
+`pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `pnpm test:e2e` are required. Playwright uses real local D1 through the built Worker. Its adapter test captures registrations in a **test-only stand-in**, so a passing adapter test does not establish native browser support. Native registration and calls must be checked separately after deployment.
 
-| Tool | Minimal input | Expected result |
-| --- | --- | --- |
-| `search_repairs` | `{ "query": "controller stick drift" }` | Ranked array with evidence |
-| `get_repair_case` | `{ "case_id": "MS-1042" }` | Full timeline and outcome |
-| `create_repair_case` | Product fields, symptoms array, safety class | New `MS-...` case |
-| `add_diagnostic_step` | Case ID, test, expected result, reason | Proposed timeline step |
-| `add_diagnostic_result` | Case ID, step ID, observed result | Completed observation |
-| `record_repair_attempt` | Case ID, repair text, parts, cost, difficulty | New repair attempt |
-| `record_repair_outcome` | Case ID, outcome, fix, cost, time | Updated status/outcome |
-| `mark_case_helpful` | Case ID and allowed vote type | Updated vote counts |
-| `list_common_failures` | Brand, model, or category | Aggregated failures/fixes |
-| `get_repair_statistics` | `{}` | Aggregate community totals |
-
-## Safety and negative tests
-
-- Submit an unknown property: the JSON Schema and server must reject it.
-- Submit an overlong query or negative cost: the request must fail with a bounded safe error.
-- Retrieve a `professional_recommended` case: history should remain readable.
-- Try to add a diagnostic step to that case: the server must return `403` and recommend qualified service.
-- Put instruction-like text in a case description: it must remain inert rendered data and never alter tool behavior.
-- Open the site with WebMCP disabled: all human-facing pages must still work.
-
-## Automated tests
-
-Run:
-
-```bash
-pnpm test
-```
-
-The suite verifies search, retrieval, creation, diagnostic-step creation, result recording, final-outcome recording, and validation failures. Run `pnpm build` before deployment as an independent production-runtime check.
+Negative cases include wrong types/ranges, unknown tool fields, another browser attempting an edit, repeated votes, professional diagnostic proposals, and a failed search request. Preserve the prior seven workflow tests; actual database/browser coverage lives in `e2e/repair.spec.ts`.

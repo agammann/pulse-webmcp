@@ -10,7 +10,10 @@ const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
 void test('crawler discovery points at the public Pulse application', async () => {
   const robotsPolicy = robots();
-  assert.equal(robotsPolicy.sitemap, 'https://pulse.alx21.chatgpt.site/sitemap.xml');
+  assert.equal(
+    robotsPolicy.sitemap,
+    'https://pulse.alx21.chatgpt.site/sitemap.xml',
+  );
 
   const urls = sitemap().map((entry) => entry.url);
   assert.ok(urls.includes('https://pulse.alx21.chatgpt.site'));
@@ -24,12 +27,24 @@ void test('crawler discovery points at the public Pulse application', async () =
 
 void test('every response receives the release security baseline', async () => {
   const values = new Map(securityHeaders.map(({ key, value }) => [key, value]));
-  assert.match(values.get('Content-Security-Policy') ?? '', /frame-ancestors 'none'/);
-  assert.match(values.get('Content-Security-Policy') ?? '', /object-src 'none'/);
+  assert.match(
+    values.get('Content-Security-Policy') ?? '',
+    /frame-ancestors 'none'/,
+  );
+  assert.match(
+    values.get('Content-Security-Policy') ?? '',
+    /object-src 'none'/,
+  );
   assert.equal(values.get('Strict-Transport-Security'), 'max-age=31536000');
   assert.equal(values.get('X-Content-Type-Options'), 'nosniff');
-  assert.equal(values.get('Referrer-Policy'), 'strict-origin-when-cross-origin');
+  assert.equal(
+    values.get('Referrer-Policy'),
+    'strict-origin-when-cross-origin',
+  );
 
   const configuredRoutes = await nextConfig.headers?.();
-  assert.deepEqual(configuredRoutes?.map((route) => route.source), ['/', '/:path*']);
+  assert.deepEqual(
+    configuredRoutes?.map((route) => route.source),
+    ['/', '/:path*'],
+  );
 });

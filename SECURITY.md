@@ -1,49 +1,19 @@
-# Security and safety policy
+# Security and safety
 
-## Supported version
+## Reporting
 
-The current deployed `main` branch is supported. Pulse is a hackathon MVP; do not use it as a substitute for a qualified repair professional, manufacturer documentation, or emergency guidance.
+Report vulnerabilities privately to the repository owner using GitHub private vulnerability reporting when available. Include affected routes, versions, conditions, and observed impact. Avoid publishing credentials or personal data.
 
-## Reporting a vulnerability
+## Data boundaries
 
-Please report vulnerabilities privately to the repository owner through GitHub's private vulnerability reporting feature. Do not include secrets, personal data, or destructive proof-of-concept steps in a public issue. Include the affected route or tool, reproduction conditions, impact, and a minimal safe demonstration.
+Pulse stores public repair journals. It does not store provider credentials or offer private records. Case text is untrusted content, rendered through React and returned as tool data, never evaluated or incorporated into trusted tool metadata.
 
-## Trust boundaries
+New cases are tied to a browser edit cookie. The cookie is opaque, HttpOnly, SameSite=Strict, Secure on HTTPS, and expires after one year. D1 stores a SHA-256 hash. Only that browser can write the case's checks, observations, attempts, and outcome. Existing unowned cases cannot be claimed through the public application. Losing the cookie loses edit access; an export is not a recovery key.
 
-- WebMCP names, descriptions, annotations, and JSON Schemas are trusted application metadata.
-- Product names, symptoms, diagnostic observations, attempts, outcomes, and notes are untrusted community data.
-- Untrusted text is returned as data with `untrustedContentHint`, rendered through React escaping, and never evaluated as code or merged into tool metadata.
-- The browser client is not trusted. Every mutation is independently validated by its server route.
+Reads are public. Writes require JSON, validate field bounds/enums, check cross-origin request metadata, and use parameterized SQL. Unknown tool properties are rejected by the page-side schema validator. HTTP parsing selects recognized fields. Feedback is deduplicated per case/type/browser. The instance-local IP limiter is a basic abuse limit, not a durable identity or anti-spam service.
 
-## Controls
+Response headers set CSP, HSTS, content-type protection, framing restrictions, referrer policy, and permissions policy. No public delete action or tool exists. There is no moderation interface, authenticated contributor identity, edit recovery, or revision archive for corrected observations/outcomes. Operators should review these limitations before hosting a large public community.
 
-- Exact enums, array limits, length limits, numeric ranges, and unknown-field rejection at server boundaries
-- Parameterized D1 queries instead of SQL string concatenation
-- Per-IP mutation rate limiting to reduce low-effort abuse
-- Relational foreign keys, uniqueness, `CHECK` constraints, and non-negative cost/time constraints
-- Safe public errors without stack traces or database details
-- No credentials in the client, repository, or required environment
-- No WebMCP delete capability
-- Compact tool outputs that limit amplification and accidental prompt-context flooding
+## Physical observations
 
-The in-memory rate limiter is intentionally basic and instance-local. A production community launch should replace it with durable edge rate limits, add abuse moderation, authenticated contributor identity, audit retention, CSRF/origin policy review, and anti-spam controls.
-
-## Physical repair safety
-
-Every case is classified:
-
-- `low_risk`: external cleaning, adjustments, replaceable accessories, non-powered components
-- `moderate_risk`: opening consumer electronics, battery work, internal low-voltage repair
-- `professional_recommended`: mains electricity, gas, high voltage, airbags, critical brakes, structure, or hazardous materials
-
-Professional-risk histories remain searchable because failure evidence can still help a user make an informed service decision. Pulse does not provide procedural steps for those cases: the mutation endpoint refuses diagnostic-step creation with `403` and recommends qualified professional service.
-
-Safety classification is not a guarantee. Users must follow manufacturer guidance, disconnect power where applicable, use appropriate protective equipment, and stop when conditions exceed their skills or local regulations.
-
-## Known MVP limitations
-
-- Public contribution is intentionally unauthenticated for judge access.
-- Votes are transparent evidence counts, not verified identities.
-- Synthetic demo records are labeled but coexist with live contributions.
-- Search is deterministic and interpretable, not semantic or exhaustive.
-- There is no moderation interface or record deletion in the MVP.
+Safety classification is supplied by the contributor, not automatically verified. Pulse is a record-keeping tool, not a diagnosis or safety certification. Cases classified `professional_recommended` stay readable, but their diagnostic-step endpoint refuses new procedural instructions. People report physical observations and completed attempts; agents organize those reports. Fictional examples and practice records are explicitly separated from community totals.
