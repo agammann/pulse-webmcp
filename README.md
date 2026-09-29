@@ -20,7 +20,7 @@ Reading, searching, and exporting are public. Other visitors can leave self-repo
 
 ## Honest evidence
 
-- The database starts with 30 clearly labeled **fictional examples**. New practice cases are labeled and separated with them.
+- The database starts with 30 clearly labeled **fictional examples**. New practice cases are labeled and separated with them. One precisely identified legacy automated test record is also relabeled as practice, preserving its history.
 - Search defaults to community cases. Examples require the source filter; tool results include their source.
 - Dashboard and homepage community totals exclude examples and practice. Outcomes are contributor reports, not independently verified physical repairs.
 - Success rate is fixed/improved cases divided by all cases with an outcome. Open cases are excluded from that denominator. No outcomes means no rate.
@@ -92,7 +92,7 @@ Unit tests cover ranking, boundaries, metadata, cookies, and statistics includin
 - `lib/search.ts`, `lib/statistics.ts` — deterministic ranking and reported totals
 - `components/repair-editor.tsx` — manual journal forms
 - `components/webmcp-provider.tsx`, `lib/webmcp-contracts.ts` — native registration and ten contracts
-- `drizzle/0000_pulse.sql`, `drizzle/0001_browser_editors.sql` — initial and additive schemas; runtime uses idempotent creation
+- `drizzle/0000_pulse.sql`, `drizzle/0001_browser_editors.sql`, `drizzle/0002_legacy_practice.sql` — initial and additive schemas; runtime uses idempotent creation
 
 ## Limits
 

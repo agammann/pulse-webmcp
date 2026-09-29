@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { legacyPracticeMigration } from './legacy-practice';
 import { seedCases } from './seed-data';
 import type { AgentActivity, RepairCase, RepairSearchResult } from './domain';
 import { summarizeCases } from './statistics';
@@ -42,7 +43,9 @@ export const ensureDatabase = async () => {
   ready = (async () => {
     const db = getD1();
     await batchInChunks(
-      schemaStatements.map((statement) => db.prepare(statement)),
+      [...schemaStatements, legacyPracticeMigration].map((statement) =>
+        db.prepare(statement),
+      ),
     );
     const existing = await db
       .prepare('SELECT COUNT(*) AS count FROM repair_cases')
