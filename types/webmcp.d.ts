@@ -1,5 +1,6 @@
 type WebMcpTool = {
   name: string;
+  title: string;
   description: string;
   inputSchema: Record<string, unknown>;
   annotations?: { readOnlyHint?: boolean; untrustedContentHint?: boolean };
@@ -15,6 +16,8 @@ type WebModelContext = {
     options?: { signal?: AbortSignal },
   ): Promise<void>;
   getTools?(): Promise<WebMcpTool[]>;
+  addEventListener?(type: string, listener: EventListener): void;
+  removeEventListener?(type: string, listener: EventListener): void;
 };
 
 interface Document {

@@ -260,32 +260,52 @@ export function WebMcpProvider() {
       const timer = window.setTimeout(() => setStatus('unavailable'), 0);
       return () => window.clearTimeout(timer);
     }
-    const controller = new AbortController();
-    void Promise.all(
-      toolDefinitions.map((tool) =>
-        context.registerTool(
-          {
-            ...tool,
-            execute: async (input, options) => {
-              options?.signal?.throwIfAborted();
-              validateToolInput(tool.inputSchema, input);
-              return tool.execute(input, options);
-            },
-          },
-          { signal: controller.signal },
-        ),
-      ),
-    )
-      .then(() => {
+    let controller: AbortController | undefined;
+    const stop = () => {
+      controller?.abort();
+      controller = undefined;
+    };
+    const start = async () => {
+      stop();
+      const current = new AbortController();
+      controller = current;
+      try {
+        await Promise.all(
+          toolDefinitions.map((tool) =>
+            context.registerTool(
+              {
+                ...tool,
+                execute: async (input, options) => {
+                  options?.signal?.throwIfAborted();
+                  validateToolInput(tool.inputSchema, input);
+                  return tool.execute(input, options);
+                },
+              },
+              { signal: current.signal },
+            ),
+          ),
+        );
+        if (current.signal.aborted || controller !== current) return;
         setStatus('available');
         setMessage(`${toolDefinitions.length} WebMCP tools registered`);
         void refreshActivity();
-      })
-      .catch(() => {
-        controller.abort();
+      } catch {
+        if (current.signal.aborted || controller !== current) return;
+        stop();
         setStatus('unavailable');
-      });
-    return () => controller.abort();
+      }
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) void start();
+    };
+    window.addEventListener('pagehide', stop);
+    window.addEventListener('pageshow', onPageShow);
+    void start();
+    return () => {
+      stop();
+      window.removeEventListener('pagehide', stop);
+      window.removeEventListener('pageshow', onPageShow);
+    };
   }, [refreshActivity, toolDefinitions]);
 
   return (

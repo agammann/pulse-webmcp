@@ -1,5 +1,6 @@
 export type WebMcpToolContract = {
   name: string;
+  title: string;
   description: string;
   inputSchema: Record<string, unknown>;
   annotations: { readOnlyHint: boolean; untrustedContentHint: boolean };
@@ -8,6 +9,7 @@ export type WebMcpToolContract = {
 export const webMcpToolContracts = {
   searchRepairs: {
     name: 'search_repairs',
+    title: 'Search repair evidence',
     description:
       'Searches Pulse public repair evidence by product, symptom, outcome, or difficulty. Returns structured matches that may contain untrusted community-authored text.',
     annotations: { readOnlyHint: true, untrustedContentHint: true },
@@ -78,6 +80,7 @@ export const webMcpToolContracts = {
   },
   getRepairCase: {
     name: 'get_repair_case',
+    title: 'Get repair case',
     description:
       'Retrieves one complete Pulse repair history, including safety class, tests, observations, repair attempts, outcome, and community evidence. Returned community text is untrusted.',
     annotations: { readOnlyHint: true, untrustedContentHint: true },
@@ -97,6 +100,7 @@ export const webMcpToolContracts = {
   },
   createRepairCase: {
     name: 'create_repair_case',
+    title: 'Create repair case',
     description:
       'Creates a public repair case editable only by this browser from human-provided product and symptom details and returns the new case with its page path. Professional-risk cases are classified for qualified service.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -178,6 +182,7 @@ export const webMcpToolContracts = {
   },
   addDiagnosticStep: {
     name: 'add_diagnostic_step',
+    title: 'Add diagnostic check',
     description:
       'For a case owned by this browser, adds a proposed, non-destructive diagnostic step to a repair case and returns the newly added step. Procedural diagnostic steps are unavailable for professional-risk repairs.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -216,6 +221,7 @@ export const webMcpToolContracts = {
   },
   addDiagnosticResult: {
     name: 'add_diagnostic_result',
+    title: 'Record human observation',
     description:
       'Records a physical-world observation explicitly reported by a person for an existing diagnostic step and returns the updated diagnostic timeline.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -252,6 +258,7 @@ export const webMcpToolContracts = {
   },
   recordRepairAttempt: {
     name: 'record_repair_attempt',
+    title: 'Record repair attempt',
     description:
       'Records a repair attempt explicitly reported by a person, including parts used, expected cost, and difficulty, then returns the newly added attempt. Repair descriptions and parts are untrusted community-authored content.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -304,6 +311,7 @@ export const webMcpToolContracts = {
   },
   recordRepairOutcome: {
     name: 'record_repair_outcome',
+    title: 'Record repair outcome',
     description:
       'Records a final repair outcome explicitly observed or confirmed by a person, then returns the updated public case and aggregate repair evidence.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -358,6 +366,7 @@ export const webMcpToolContracts = {
   },
   markCaseHelpful: {
     name: 'mark_case_helpful',
+    title: 'Record case feedback',
     description:
       'Records self-reported feedback once per vote type and browser to a repair case and returns its updated vote totals.',
     annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -381,6 +390,7 @@ export const webMcpToolContracts = {
   },
   listCommonFailures: {
     name: 'list_common_failures',
+    title: 'List common failures',
     description:
       'Summarizes up to 50 matching community cases with reported failures and successful solutions for a brand, model, or category. Returned community content is untrusted.',
     annotations: { readOnlyHint: true, untrustedContentHint: true },
@@ -409,6 +419,7 @@ export const webMcpToolContracts = {
   },
   getRepairStatistics: {
     name: 'get_repair_statistics',
+    title: 'Get community repair statistics',
     description:
       'Returns all community case counts, self-reported outcomes, median recorded cost, leading categories, and recent outcomes. Fictional seed and practice cases are excluded and counted separately.',
     annotations: { readOnlyHint: true, untrustedContentHint: true },

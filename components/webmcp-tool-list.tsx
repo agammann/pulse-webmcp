@@ -30,15 +30,31 @@ export function WebMcpToolList() {
       0,
     );
     if (!context) return () => window.clearTimeout(detectionTimer);
-    const toolsTimer = window.setTimeout(() => {
-      void context
-        .getTools?.()
-        .then((items) => setRegistered(items.map((item) => item.name)))
-        .catch(() => {});
-    }, 250);
+    let disposed = false;
+    const inspect = async () => {
+      try {
+        const items = (await context.getTools?.()) ?? [];
+        if (!disposed) setRegistered(items.map((item) => item.name));
+      } catch {
+        if (!disposed) setRegistered([]);
+      }
+    };
+    const refresh = () => void inspect();
+    const onHide = () => setRegistered([]);
+    const onShow = (event: PageTransitionEvent) => {
+      if (event.persisted) refresh();
+    };
+    context.addEventListener?.('toolchange', refresh);
+    window.addEventListener('pagehide', onHide);
+    window.addEventListener('pageshow', onShow);
+    const toolsTimer = window.setTimeout(refresh, 0);
     return () => {
+      disposed = true;
       window.clearTimeout(detectionTimer);
       window.clearTimeout(toolsTimer);
+      context.removeEventListener?.('toolchange', refresh);
+      window.removeEventListener('pagehide', onHide);
+      window.removeEventListener('pageshow', onShow);
     };
   }, []);
   return (
@@ -53,12 +69,14 @@ export function WebMcpToolList() {
               ? 'WebMCP not detected'
               : detected === null
                 ? 'Checking WebMCP…'
-                : 'WebMCP available'}
+                : registered.length
+                  ? 'WebMCP available'
+                  : 'WebMCP detected'}
           </strong>
           <p>
             {detected === false
               ? 'The human interface remains fully available in ordinary browsers.'
-              : `${registered.length || tools.length} structured tools are registered on this page.`}
+              : `${registered.length} structured tools verified on this page.`}
           </p>
         </div>
       </div>
@@ -80,13 +98,20 @@ export function WebMcpToolList() {
               {mode === 'read' ? <Eye /> : <PencilLine />}
               {mode === 'read' ? 'Read only' : 'Mutates state'}
             </span>
-            <span className="registered">
-              <CheckCircle2 />
-              {registered.length
-                ? registered.includes(name)
+            <span
+              className="registered"
+              style={
+                registered.includes(name)
+                  ? undefined
+                  : { color: 'var(--muted-foreground)' }
+              }
+            >
+              {registered.includes(name) ? <CheckCircle2 /> : <Bot />}
+              {detected === false
+                ? 'Unavailable'
+                : registered.includes(name)
                   ? 'Registered'
-                  : 'Pending'
-                : 'Registered'}
+                  : 'Pending'}
             </span>
           </div>
         ))}
