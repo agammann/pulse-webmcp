@@ -344,6 +344,17 @@ test('mobile navigation and public pages render without overflow or console erro
   });
   for (const url of ['/dashboard', '/webmcp', '/about']) {
     await page.goto(url);
+    if (url === '/webmcp') {
+      await expect(
+        page.getByText('WebMCP not detected', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.locator('.tool-row').getByText('Unavailable', { exact: true }),
+      ).toHaveCount(10);
+      await expect(
+        page.locator('.tool-row').getByText('Registered', { exact: true }),
+      ).toHaveCount(0);
+    }
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

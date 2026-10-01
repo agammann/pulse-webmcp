@@ -33,6 +33,19 @@ Pulse organizes repair records; it does not diagnose an object or generate repai
 
 The page registers tools through `document.modelContext.registerTool`, with a compatibility fallback for `navigator.modelContext`. Browsers without the API show a clear status and retain the full form workflow. No provider key or paid model is required by Pulse; an agent is optional and supplied by the visitor's browser.
 
+WebMCP is experimental. Native checks use an isolated browser with `--enable-features=WebMCP`; installing ordinary Chrome alone does not enable the API. See [Chrome's WebMCP setup](https://developer.chrome.com/docs/ai/webmcp) and the [verification guide](WEBMCP_TESTING.md). The tool page reports actual discovery rather than labeling absent tools as registered. Registrations are removed on page hide and restored when the browser returns from its back-forward cache.
+
+Compatibility checked on September 30, 2026:
+
+| Browser/client                           | Verified behavior                                                                                                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chrome 154.0.8037.93 with WebMCP enabled | Four native tests: all ten calls, visible journal updates, local D1 persistence, validation, ownership, professional-case boundaries and page restoration  |
+| Edge 154.0.4258.48 with WebMCP enabled   | The same four native tests against the production Worker with local D1                                                                                     |
+| Connected Codex browser agent            | All ten tools called on the public site using one explicitly fictional practice case; repeated feedback counted once and community totals stayed unchanged |
+| Ordinary Chromium without WebMCP         | Six browser tests: complete forms, reload/export, ownership, feedback, unavailable data and mobile pages; tools report unavailable                         |
+
+These are recorded checks of those versions, not a promise that every browser or agent supports the experimental API. Automated mutating fixtures use local D1. Live automated native checks perform discovery, reads and lifecycle checks; they skip the two fixture-writing tests.
+
 | Tool                    | What it does                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------ |
 | `search_repairs`        | Search community cases; optionally request examples or all records                   |
@@ -76,12 +89,17 @@ The public site uses the same build with a durable D1 binding named `DB`, declar
 pnpm test
 pnpm lint
 pnpm typecheck
+pnpm audit
 pnpm exec playwright install chromium
 pnpm build
 pnpm test:e2e
+pnpm exec playwright install chrome
+pnpm test:webmcp
 ```
 
-Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. A test-only registry captures adapters in Playwright; this is separate from native WebMCP verification in a compatible browser.
+Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. The adapter test uses a test-only registry; `test:webmcp` separately asserts the browser's native implementation and invokes its discovered tools. CI runs both suites and retains native browser versions and results.
+
+To adapt the pattern, keep each capability in a shared HTTP handler, define its contract in `lib/webmcp-contracts.ts`, and expose it through both the forms and native provider. Preserve server ownership and validation checks. Replace the fictional corpus and product metadata for your domain, then prove that a tool write updates the visible page and survives a reload. Run the negative cases and ordinary-browser workflow as part of the same release.
 
 ## Source map
 

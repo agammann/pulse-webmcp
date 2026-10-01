@@ -8,7 +8,7 @@ Practice and seeded examples are public fictional records. They appear under **E
 
 ## Native WebMCP
 
-Open [Pulse](https://pulse.alx21.chatgpt.site/) in a browser and agent that support WebMCP. Expand the activity dock and check that ten tools registered. The implementation follows the [WebMCP imperative API](https://github.com/webmachinelearning/webmcp/blob/main/README.md). Browser support changes; absence of the API is shown explicitly and does not disable forms.
+Open [Pulse](https://pulse.alx21.chatgpt.site/) in a browser and agent that support WebMCP. WebMCP is experimental: the native automated suite launches an isolated Chrome or Edge profile with `--enable-features=WebMCP`. See [Chrome's current setup instructions](https://developer.chrome.com/docs/ai/webmcp). Ordinary unflagged browsers keep the forms and show tools as unavailable. Expand the activity dock and check that ten tools registered. The implementation follows the [WebMCP imperative API](https://github.com/webmachinelearning/webmcp/blob/main/README.md).
 
 1. Call `search_repairs` with `{ "source": "examples", "query": "controller stick drift", "limit": 5 }`. Check that each result identifies fictional/example provenance.
 2. Call `get_repair_case` with a returned ID. Check complete JSON, all steps, attempts, outcome fields, and `can_edit`.
@@ -22,6 +22,39 @@ Use the registered schemas for required fields and limits. Agents share the brow
 
 ## Automated checks
 
-`pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `pnpm test:e2e` are required. Playwright uses real local D1 through the built Worker. Its adapter test captures registrations in a **test-only stand-in**, so a passing adapter test does not establish native browser support. Native registration and calls must be checked separately after deployment.
+Run the release checks from a fresh checkout:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm test
+pnpm seed:check
+pnpm lint
+pnpm typecheck
+pnpm audit
+pnpm exec playwright install chromium chrome
+pnpm build
+pnpm test:e2e
+pnpm test:webmcp
+```
+
+The ordinary suite uses the built Worker on port 3015; the native suite uses port 3017. Both use real project-local D1. Run suites sequentially because their database directory is shared. The adapter test captures registrations in a **test-only stand-in**. The separate native suite verifies `[native code]`, discovers all ten schemas, titles and annotations, then calls every tool through `document.modelContext.executeTool` without replacing the API. It checks visible updates after every journal write, database persistence and export, duplicate feedback, unchanged community totals, thirteen invalid inputs, browser ownership, professional cases, cleanup, actual back-forward caching and reload.
+
+For an installed Edge, use PowerShell:
+
+```powershell
+$env:PULSE_WEBMCP_CHANNEL = 'msedge'
+pnpm test:webmcp
+Remove-Item Env:PULSE_WEBMCP_CHANNEL
+```
+
+For public-site verification:
+
+```powershell
+$env:PULSE_WEBMCP_URL = 'https://pulse.alx21.chatgpt.site'
+pnpm test:webmcp
+Remove-Item Env:PULSE_WEBMCP_URL
+```
+
+Remote runs deliberately skip fixture-writing tests and run two native discovery/read/lifecycle tests. Perform the controlled practice journal above once with a connected browser agent to verify public writes. Registrations are aborted on page hide and restored on `pageshow` when its `persisted` flag is true. Local tests require actual cache restoration; remote checks record whether the host allowed it. CI runs native Chrome and uploads `test-results/` even on success. JSON reports include the exact browser version and cache result. See the dated compatibility record in [README](README.md).
 
 Negative cases include wrong types/ranges, unknown tool fields, another browser attempting an edit, repeated votes, professional diagnostic proposals, and a failed search request. Preserve the prior seven workflow tests; actual database/browser coverage lives in `e2e/repair.spec.ts`.

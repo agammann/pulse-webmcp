@@ -7,6 +7,7 @@ void test('WebMCP contracts describe every input and keep metadata declarative',
   assert.equal(contracts.length, 10);
 
   for (const contract of contracts) {
+    assert.ok(contract.title.trim().length > 0);
     assert.doesNotMatch(
       contract.description,
       /\b(?:do not|must|never)\b/i,
