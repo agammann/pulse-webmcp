@@ -104,7 +104,7 @@ pnpm test:webmcp
 pnpm test:persistence
 ```
 
-The 1.0.1 source includes available dependency patches, but `pnpm audit` still reports the unpatched high-severity braces advisory [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), including its production dependency classification. The maintainer explicitly accepted that exact finding for Pulse; `pnpm security:audit` preserves it and fails on changed metadata or paths, additional findings, or an available patch. A passing policy is not an audit with no findings. See [Security](SECURITY.md), [CHANGELOG](CHANGELOG.md) and [STABILITY](docs/STABILITY.md).
+Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
 To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.1_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
 

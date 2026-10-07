@@ -69,12 +69,4 @@ dependencies, and build output. `scripts/unpack-release.py --out <new-folder>`
 checks both sidecars, exact tracked bytes, and safe archive paths before extracting
 an independent source consumer. Python 3.12 or newer is needed only for this check.
 
-Available source-map-js, tinypool, and sharp patches are pinned. `pnpm audit`
-still reports the high-severity braces 3.0.3 advisory GHSA-vfj7-8cjw-p6xm through
-Vinext and two shadcn paths, classified as a production dependency. The maintainer
-explicitly accepted that exact finding for Pulse 1.0.1. `pnpm security:audit`
-preserves its full report and fresh advisory/registry metadata, and fails on a
-new finding, changed paths or classification, malformed metadata or an available
-patch. A passing policy is not an audit with no findings. The main-only publisher
-verifies the checked commit, tag and source-asset digests; hosted deployment has a
-separate acceptance check. See [Security](../SECURITY.md).
+The main-only publisher verifies the checked commit, tag and source-asset digests. Hosted deployment has a separate acceptance check.
