@@ -114,6 +114,75 @@ test('ordinary browser completes the full journal, reloads saved evidence and ex
   });
 });
 
+test('failed outcome writes preserve the draft and correcting an outcome preserves earlier evidence', async ({
+  page,
+}) => {
+  const repair = await create(page);
+  const step = await page.request.post(`/api/repairs/${repair.id}/steps`, {
+    data: {
+      test: 'Fictional fit check.',
+      expected_result: 'Clip fits.',
+      reason: 'Practice only.',
+    },
+  });
+  expect(step.status()).toBe(201);
+  expect(
+    (
+      await page.request.post(`/api/repairs/${repair.id}/attempts`, {
+        data: {
+          repair_description: 'Fictional clip-size attempt.',
+          parts_used: ['clip'],
+          estimated_cost: 1,
+          difficulty: 'easy',
+        },
+      })
+    ).status(),
+  ).toBe(201);
+  await page.goto(`/repairs/${repair.id}`);
+  await page
+    .getByText('4. Record or correct the outcome', { exact: true })
+    .click();
+  const conclusion = page.getByLabel('Final fix or conclusion');
+  await conclusion.fill('Fictional first outcome.');
+  await page.getByLabel('Total cost (USD)', { exact: true }).fill('1');
+  await page.getByLabel('Time spent (whole minutes)').fill('2');
+  // Forward the request to actual D1 handlers with an invalid cost; do not mock a response.
+  await page.route(`**/api/repairs/${repair.id}/outcome`, async (route) => {
+    const input = route.request().postDataJSON();
+    await route.continue({ postData: JSON.stringify({ ...input, cost: -1 }) });
+  });
+  const rejected = page.waitForResponse((response) =>
+    response.url().endsWith(`/api/repairs/${repair.id}/outcome`),
+  );
+  await page.getByRole('button', { name: 'Save outcome' }).click();
+  expect((await rejected).status()).toBe(400);
+  await expect(conclusion).toHaveValue('Fictional first outcome.');
+  expect(
+    (await (await page.request.get(`/api/repairs/${repair.id}`)).json()).repair
+      .outcome,
+  ).toBeNull();
+  await page.unroute(`**/api/repairs/${repair.id}/outcome`);
+  await page.getByRole('button', { name: 'Save outcome' }).click();
+  await expect(page.locator('.timeline')).toContainText(
+    'Fictional first outcome.',
+  );
+  await conclusion.fill('Fictional corrected outcome.');
+  await page.getByLabel('Total cost (USD)', { exact: true }).fill('3');
+  await page.getByLabel('Time spent (whole minutes)').fill('4');
+  await page.getByRole('button', { name: 'Save outcome' }).click();
+  await expect(page.locator('.timeline')).toContainText(
+    'Fictional corrected outcome.',
+  );
+  await page.reload();
+  const saved = (
+    await (await page.request.get(`/api/repairs/${repair.id}`)).json()
+  ).repair;
+  expect(saved.outcome.final_fix).toBe('Fictional corrected outcome.');
+  expect(saved.outcome.cost).toBe(3);
+  expect(saved.diagnostic_steps).toHaveLength(1);
+  expect(saved.repair_attempts).toHaveLength(1);
+});
+
 test('another browser can read but cannot change an owned case; repeat feedback counts once', async ({
   page,
   browser,

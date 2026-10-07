@@ -35,7 +35,10 @@ pnpm exec playwright install chromium chrome
 pnpm build
 pnpm test:e2e
 pnpm test:webmcp
+pnpm test:persistence
 ```
+
+The persistence regression uses a separate local port (3019 by default), saves a fictional case in actual D1, stops the Worker, rebuilds it, and checks the exact case and same-cookie edit permission after restarting. Set `PULSE_PERSISTENCE_PORT` to another free port if needed. Its local fixture remains in the isolated database. See [STABILITY](docs/STABILITY.md) for the stopped backup/restore procedure and export limitations.
 
 The ordinary suite uses the built Worker on port 3015; the native suite uses port 3017. Both use real project-local D1. Run suites sequentially because their database directory is shared. The adapter test captures registrations in a **test-only stand-in**. The separate native suite verifies `[native code]`, discovers all ten schemas, titles and annotations, then calls every tool through `document.modelContext.executeTool` without replacing the API. It checks visible updates after every journal write, database persistence and export, duplicate feedback, unchanged community totals, thirteen invalid inputs, browser ownership, professional cases, cleanup, actual back-forward caching and reload.
 
