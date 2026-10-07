@@ -12,7 +12,7 @@
 2. Choose **Start a Repair**. Describe the object and the observed problem, then select its safety classification. Select **practice case** when trying fictional data.
 3. Open the case. Use **Continue this case** to propose a check, record an observation, and document an attempt and its parts/cost.
 4. Record the outcome, total cost in USD, whole minutes spent, and notes. Failures and professional-service decisions are useful outcomes too. Saving an outcome replaces the previous outcome; checks and attempts remain.
-5. Reload to verify the saved evidence. Use **Export case JSON** for a readable backup.
+5. Reload to verify the saved evidence. Use **Export case JSON** for a readable copy of the journal. It does not contain the browser's edit credential and cannot restore editing access.
 
 Everything submitted is **public**. Avoid personal information and serial numbers. The browser that creates a case receives an opaque, HttpOnly edit cookie; the server stores only its hash. Keep the same browser profile and cookies to continue editing. Clearing cookies or moving to another device removes editing access. There is no account, recovery flow, edit-key export, or public delete action. Existing cases created before browser ownership was introduced remain readable without an edit-claim mechanism.
 
@@ -45,6 +45,8 @@ Compatibility checked on September 30, 2026:
 | Ordinary Chromium without WebMCP         | Six browser tests: complete forms, reload/export, ownership, feedback, unavailable data and mobile pages; tools report unavailable                         |
 
 These are recorded checks of those versions, not a promise that every browser or agent supports the experimental API. Automated mutating fixtures use local D1. Live automated native checks perform discovery, reads and lifecycle checks; they skip the two fixture-writing tests.
+
+The 1.0.1 local candidate was also checked with native Chrome 155.0.8059.39 and ordinary Chromium 145.0.7632.6. Its local checks cover all ten native calls, the complete practice journal, outcome correction, actual-backend failed writes retaining drafts, and edit permission after a stopped rebuild. These local results do not claim that the hosted site has been updated.
 
 | Tool                    | What it does                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------ |
@@ -81,6 +83,8 @@ pnpm build
 pnpm start --port 3015
 ```
 
+The built Worker stores local D1 in `.wrangler/state`, outside `dist`, so a rebuild preserves the journal and edit permission in the same browser. Before upgrading an existing 1.0.0 built-Worker database, stop it and back up `dist/server/.wrangler/state` **before building**; the previous default put local data inside the disposable build directory. See [the stability and recovery guide](docs/STABILITY.md) for migration and stopped local backup/restore. Public JSON exports cannot replace a database backup or recover a cleared browser cookie.
+
 The public site uses the same build with a durable D1 binding named `DB`, declared in `.openai/hosting.json`. Local D1 is separate from the public database. Sites deploys `dist/` from a source commit; GitHub Actions verifies source changes but does not deploy them automatically. Hosting a separate copy requires your own compatible Cloudflare/Sites environment and may have hosting costs.
 
 ## Verify changes
@@ -90,12 +94,19 @@ pnpm test
 pnpm lint
 pnpm typecheck
 pnpm audit
+pnpm test:audit-policy
+pnpm security:audit
 pnpm exec playwright install chromium
 pnpm build
 pnpm test:e2e
 pnpm exec playwright install chrome
 pnpm test:webmcp
+pnpm test:persistence
 ```
+
+The 1.0.1 source includes available dependency patches, but `pnpm audit` still reports the unpatched high-severity braces advisory [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), including its production dependency classification. The maintainer explicitly accepted that exact finding for Pulse; `pnpm security:audit` preserves it and fails on changed metadata or paths, additional findings, or an available patch. A passing policy is not an audit with no findings. See [Security](SECURITY.md), [CHANGELOG](CHANGELOG.md) and [STABILITY](docs/STABILITY.md).
+
+To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.1_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
 
 Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. The adapter test uses a test-only registry; `test:webmcp` separately asserts the browser's native implementation and invokes its discovered tools. CI runs both suites and retains native browser versions and results.
 

@@ -74,7 +74,8 @@ export function RepairEditor({
       <h2>Continue this case</h2>
       <p>
         Entries are public. Record only what was actually observed or attempted.
-        This browser holds the edit key; export a copy before clearing cookies.
+        This browser holds the edit key. Clearing cookies loses editing access;
+        exports contain only journal data.
       </p>
       {notice && <output className="inline-notice">{notice}</output>}
       {repair.safety_classification !== 'professional_recommended' && (
