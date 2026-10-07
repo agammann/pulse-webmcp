@@ -14,30 +14,9 @@ Reads are public. Writes require JSON, validate field bounds/enums, check cross-
 
 Response headers set CSP, HSTS, content-type protection, framing restrictions, referrer policy, and permissions policy. No public delete action or tool exists. There is no moderation interface, authenticated contributor identity, edit recovery, or revision archive for corrected observations/outcomes. Operators should review these limitations before hosting a large public community.
 
-## Dependency release policy
+## Dependency checks
 
-Pulse 1.0.1 pins available fixes for source-map-js, tinypool and sharp. Its full
-audit still reports one high-severity unpatched finding, braces 3.0.3
-[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), through
-these exact paths:
-
-- `vinext > vite-plugin-commonjs > vite-plugin-dynamic-import > fast-glob > micromatch > braces`
-- `shadcn > fast-glob > micromatch > braces`
-- `shadcn > ts-morph > @ts-morph/common > fast-glob > micromatch > braces`
-
-Vinext and shadcn are production manifest dependencies; the audit classifies this
-finding `dev: false`. The maintainer explicitly accepted that exact finding for
-Pulse 1.0.1. It remains a known risk. Observed build-tool usage does not establish
-that all runtime exposure is absent; build only trusted source/configuration.
-
-The audit suggests 3.0.4, but the primary advisory has no fixed version and the
-registry currently publishes none. `pnpm security:audit` preserves the complete
-raw audit, fresh primary advisory and registry evidence in `reports/`. It permits
-only the accepted ID, installed version, severity, three paths and classification,
-and fails on new or changed findings, malformed metadata, or an available patch.
-The policy tests exercise those rejection cases. `pnpm audit` still fails for this
-finding; passing the exact policy is not an audit with no findings. Revisit the
-exception when an upstream patch becomes available.
+Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
 ## Physical observations
 
