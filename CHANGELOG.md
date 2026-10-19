@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+
+- Replace the unbounded brace dependency with a maintained compatibility package that preserves ordinary glob behavior and the upstream license.
+- Reject excessive brace, parenthesis and AST-array nesting before stack exhaustion.
+- Require dependency audits without accepted advisories and verify the replacement in freshly installed source distributions.
+
 ## 1.0.1
 
 - Keep built-Worker local D1 outside `dist` so rebuilding preserves journal data
