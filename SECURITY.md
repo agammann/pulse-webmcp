@@ -21,3 +21,13 @@ Run `pnpm security:audit` when changing dependencies. CI retains the full depend
 ## Physical observations
 
 Safety classification is supplied by the contributor, not automatically verified. Pulse is a record-keeping tool, not a diagnosis or safety certification. Cases classified `professional_recommended` stay readable, but their diagnostic-step endpoint refuses new procedural instructions. People report physical observations and completed attempts; agents organize those reports. Fictional examples and practice records are explicitly separated from community totals.
+
+## Bounded brace tooling
+
+Transitive `braces` imports resolve to the repository-maintained
+`@agammann/bounded-braces` package in `vendor/bounded-braces`. It preserves the
+upstream MIT license and ordinary glob behavior, while rejecting excessive
+brace/parenthesis nesting and cyclic direct AST values before stack exhaustion.
+The 64-level safety bound cannot be disabled by caller options. The package
+README documents its origin and maintenance requirements. The regular test
+command verifies real tooling dependency edges and adversarial inputs.
