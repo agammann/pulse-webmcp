@@ -106,7 +106,7 @@ pnpm test:persistence
 
 Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
-To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.2_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
+To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.3_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
 
 Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. The adapter test uses a test-only registry; `test:webmcp` separately asserts the browser's native implementation and invokes its discovered tools. CI runs both suites and retains native browser versions and results.
 
@@ -125,6 +125,6 @@ To adapt the pattern, keep each capability in a shared HTTP handler, define its 
 
 ## Limits
 
-Pulse has no contributor accounts, moderation dashboard, cross-device editing, or deletion UI. Rate limiting is basic and instance-local. Browser cookies limit accidental duplicate feedback; clearing them can create a new voter identity. Outcome corrections replace the current outcome rather than preserving revisions. Search is a deterministic in-memory ranking over loaded case rows, suited to a small collection. Public case text and safety classifications are self-reported.
+Pulse has no contributor accounts, moderation dashboard, cross-device editing, or deletion UI. Mutation requests are capped at 32 KiB of JSON. Rate limiting is basic and instance-local, so it is not a global quota across Cloudflare Worker isolates. It uses Cloudflare's client IP header when present; requests without it share one local anonymous bucket. Browser cookies limit accidental duplicate feedback; clearing them can create a new voter identity. Outcome corrections replace the current outcome rather than preserving revisions. Search is a deterministic in-memory ranking over loaded case rows, suited to a small collection. Public case text and safety classifications are self-reported.
 
 MIT licensed. See [LICENSE](LICENSE) and [security and safety policy](SECURITY.md).

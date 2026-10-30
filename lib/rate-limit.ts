@@ -20,11 +20,9 @@ export function mutationRateLimit(
   limit = 30,
   windowMs = 60_000,
 ) {
-  const forwarded =
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-forwarded-for') ??
-    'anonymous';
-  const key = forwarded.split(',')[0].trim();
+  // Cloudflare sets this header on incoming requests. Untrusted forwarding
+  // headers cannot identify clients when running locally without Cloudflare.
+  const key = request.headers.get('cf-connecting-ip')?.trim() || 'anonymous';
   const now = Date.now();
   removeExpiredWindows(now);
   const current = windows.get(key);

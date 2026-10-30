@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Bound repair mutation JSON bodies and check editor access before processing owner-only requests.
+- Use Cloudflare client IP metadata for the basic instance-local mutation limiter, with a shared anonymous bucket when that metadata is absent.
+
 ## 1.0.2
 
 - Replace the unbounded brace dependency with a maintained compatibility package that preserves ordinary glob behavior and the upstream license.

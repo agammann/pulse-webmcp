@@ -2,7 +2,7 @@ import { mutationRequest } from '@/lib/access';
 import { readSession } from '@/lib/session';
 import { createRepairCase, searchRepairs } from '@/lib/database';
 import { mutationRateLimit } from '@/lib/rate-limit';
-import { apiError, parseCreateCase, ValidationError } from '@/lib/validation';
+import { apiError, parseCreateCase, readJsonBody, ValidationError } from '@/lib/validation';
 
 export async function GET(request: Request) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   if (limited) return limited;
   try {
     mutationRequest(request);
-    const input = parseCreateCase(await request.json());
+    const input = parseCreateCase(await readJsonBody(request));
     const session = (await readSession(request, true))!;
     const repair = await createRepairCase(input, session.id);
     return Response.json(

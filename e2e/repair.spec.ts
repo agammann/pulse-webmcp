@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+import { MAX_JSON_BODY_BYTES } from '../lib/validation';
 
 const caseInput = {
   category: 'Desk accessories',
@@ -18,6 +19,16 @@ async function create(page: Page, extra = {}) {
   expect(response.status()).toBe(201);
   return (await response.json()).repair as { id: string };
 }
+
+test('owner routes check edit access before reading malformed JSON', async ({
+  page,
+}) => {
+  const denied = await page.request.post('/api/repairs/MS-1001/steps', {
+    data: '{',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(denied.status()).toBe(403);
+});
 test('ordinary browser completes the full journal, reloads saved evidence and exports JSON', async ({
   page,
 }) => {
@@ -431,4 +442,11 @@ test('mobile navigation and public pages render without overflow or console erro
     ).toBe(true);
   }
   expect(errors).toEqual([]);
+});
+
+test('create route rejects oversized JSON before parsing', async ({ page }) => {
+  const response = await page.request.post('/api/repairs', {
+    data: { ...caseInput, padding: 'x'.repeat(MAX_JSON_BODY_BYTES) },
+  });
+  expect(response.status()).toBe(413);
 });

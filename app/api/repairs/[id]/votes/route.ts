@@ -2,7 +2,7 @@ import { mutationRequest } from '@/lib/access';
 import { readSession } from '@/lib/session';
 import { markHelpful } from '@/lib/database';
 import { mutationRateLimit } from '@/lib/rate-limit';
-import { apiError, parseVote } from '@/lib/validation';
+import { apiError, parseVote, readJsonBody } from '@/lib/validation';
 
 export async function POST(
   request: Request,
@@ -16,7 +16,7 @@ export async function POST(
     const session = (await readSession(request, true))!;
     const repair = await markHelpful(
       id,
-      parseVote(await request.json()).vote_type,
+      parseVote(await readJsonBody(request)).vote_type,
       session.id,
     );
     if (!repair)
