@@ -4,6 +4,59 @@ export class ValidationError extends Error {
   status = 400;
 }
 
+export const MAX_JSON_BODY_BYTES = 32 * 1024;
+
+class PayloadTooLargeError extends ValidationError {
+  status = 413;
+
+  constructor() {
+    super('JSON request body exceeds the 32 KiB limit.');
+  }
+}
+
+export async function readJsonBody(request: Request): Promise<unknown> {
+  const declaredLength = request.headers.get('content-length');
+  if (declaredLength !== null && Number(declaredLength) > MAX_JSON_BODY_BYTES)
+    throw new PayloadTooLargeError();
+
+  if (!request.body) throw new SyntaxError('Unexpected end of JSON input');
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_JSON_BODY_BYTES) {
+        try {
+          await reader.cancel();
+        } catch {
+          // The size error is the useful response even if cancellation fails.
+        }
+        throw new PayloadTooLargeError();
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    throw new ValidationError('Send UTF-8 JSON.');
+  }
+  return JSON.parse(text);
+}
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 

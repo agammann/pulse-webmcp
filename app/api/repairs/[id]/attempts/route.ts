@@ -1,7 +1,7 @@
 import { requireEditor } from '@/lib/access';
 import { recordRepairAttempt } from '@/lib/database';
 import { mutationRateLimit } from '@/lib/rate-limit';
-import { apiError, parseAttempt } from '@/lib/validation';
+import { apiError, parseAttempt, readJsonBody } from '@/lib/validation';
 
 export async function POST(
   request: Request,
@@ -10,10 +10,10 @@ export async function POST(
   const limited = mutationRateLimit(request);
   if (limited) return limited;
   try {
-    const input = parseAttempt(await request.json());
     const { id } = await context.params;
     const denied = await requireEditor(request, id);
     if (denied) return denied;
+    const input = parseAttempt(await readJsonBody(request));
     const repair = await recordRepairAttempt(id, input);
     if (!repair)
       return Response.json(
