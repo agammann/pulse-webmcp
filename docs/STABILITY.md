@@ -1,4 +1,6 @@
-# Pulse 1.0.1 contract
+# Pulse v1 contract
+
+Current source release: **1.0.4**. This delivery updates development tooling without changing the public journal, browser ownership, D1 schema or ten WebMCP tool contracts.
 
 Pulse is a public journal, not a diagnosis service. A person supplies observations,
 attempts, costs, and outcomes. Fictional exercises must be marked as practice.

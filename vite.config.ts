@@ -52,6 +52,16 @@ export default defineConfig(async () => {
 
   return {
     css: { postcss: { plugins: [tailwindcss()] } },
+    // Vinext's generated sidecar imports are relative to the Worker root.
+    environments: {
+      rsc: {
+        build: {
+          rolldownOptions: {
+            output: { chunkFileNames: '[name]-[hash].js' },
+          },
+        },
+      },
+    },
     resolve: staticPreview ? { alias: { 'cloudflare:workers': resolve(process.cwd(), 'lib/cloudflare-preview.ts') } } : undefined,
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }

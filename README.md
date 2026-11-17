@@ -4,6 +4,8 @@
 
 [Open Pulse](https://pulse.alx21.chatgpt.site/) · [Browse examples](https://pulse.alx21.chatgpt.site/repairs?source=examples) · [Start a repair](https://pulse.alx21.chatgpt.site/repair/new) · [Agent guide](WEBMCP_TESTING.md)
 
+Source release **1.0.4** includes the current tested toolchain and the patched Vite development server. See [source downloads](https://github.com/agammann/pulse-webmcp/releases/tag/v1.0.4) and [stability and recovery](docs/STABILITY.md).
+
 ![Pulse repair journal](docs/pulse-desktop.png)
 
 ## Use it
@@ -106,7 +108,7 @@ pnpm test:persistence
 
 Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
-To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.3_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
+To build a reproducible source archive from a clean committed checkout, run `pnpm release:package`. It creates `pulse_1.0.4_source.zip` and SHA-256 sidecars in `release-artifacts/`. With Python 3.12 or newer, run `python scripts/unpack-release.py --out ../pulse-consumer` to verify exact source bytes and extract a new folder outside the checkout, then follow the same install/build/start steps there. The source archive excludes dependencies, build output, private files, and local databases.
 
 Unit tests cover ranking, boundaries, metadata, cookies, and statistics including more than 50 cases. Browser tests run the built Worker with local D1 and cover the full ordinary-browser repair journal, reload/export, ownership, feedback deduplication, professional-case boundaries, source filtering, unavailable data, mobile pages, and all ten tool adapters. The adapter test uses a test-only registry; `test:webmcp` separately asserts the browser's native implementation and invokes its discovered tools. CI runs both suites and retains native browser versions and results.
 

@@ -18,6 +18,13 @@ Response headers set CSP, HSTS, content-type protection, framing restrictions, r
 
 Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
+Source 1.0.4 uses Vite 8.3.7 and its patched Rolldown dependency for
+[GHSA-p4f5-76q4-ffq7](https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7).
+The advisory concerns development servers explicitly exposed to the network;
+it is not an exploit claim against the deployed production Worker. Keep the
+default loopback development binding. The upstream advisory identified the
+affected former Vite 8.2.4 even though the registry audit returned no advisories.
+
 ## Physical observations
 
 Safety classification is supplied by the contributor, not automatically verified. Pulse is a record-keeping tool, not a diagnosis or safety certification. Cases classified `professional_recommended` stay readable, but their diagnostic-step endpoint refuses new procedural instructions. People report physical observations and completed attempts; agents organize those reports. Fictional examples and practice records are explicitly separated from community totals.

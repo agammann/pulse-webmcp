@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4
+
+- Update Vite from 8.2.4 to 8.3.7 with its patched Rolldown dependency for [GHSA-p4f5-76q4-ffq7](https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7). The affected condition is a development server explicitly exposed to the network, not the deployed production Worker.
+- Align the PostCSS tooling on 8.5.33 so the updated Vite and existing Tailwind plugin share compatible types without weakening configuration checks.
+- Keep RSC server chunks beside the generated Worker manifests so the updated bundler's split entry resolves its sidecars and starts correctly. Client asset paths are unchanged.
+- Deliver the current tested React, chart, TypeScript, RSC plugin and CI changes with their frozen lockfile under a matching source version.
+- Align source-download and current v1 recovery guidance while preserving dated verification history, browser ownership, D1 schema, practice-data separation and all ten WebMCP contracts.
+
 ## 1.0.3
 
 - Bound repair mutation JSON bodies and check editor access before processing owner-only requests.
