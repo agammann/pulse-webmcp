@@ -82,11 +82,25 @@ test.afterEach(async ({ page }) => expect(errors.get(page)).toEqual([]));
 test('native discovery exposes ten titled contracts and reads actual public evidence', async ({
   page,
 }) => {
-  const tools = await page.evaluate(async () =>
-    (document.modelContext as unknown as NativeContext).getTools(),
-  );
+  const tools = await page.evaluate(async () => {
+    const native = document.modelContext as unknown as NativeContext;
+    // Read native getters before Playwright serializes these objects.
+    return (await native.getTools()).map((tool) => ({
+      name: tool.name,
+      title: tool.title,
+      inputSchema: tool.inputSchema,
+      annotations: tool.annotations && {
+        readOnlyHint: tool.annotations.readOnlyHint,
+        untrustedContentHint: tool.annotations.untrustedContentHint,
+      },
+      origin: tool.origin,
+    }));
+  });
   for (const contract of Object.values(webMcpToolContracts)) {
-    const actual = tools.find((tool) => tool.name === contract.name)!;
+    const actual = tools.find((tool) => tool.name === contract.name);
+    if (!actual) {
+      throw new Error(`Native discovery did not return ${contract.name}`);
+    }
     expect(actual.title.length).toBeGreaterThan(0);
     expect(
       typeof actual.inputSchema === 'string'
@@ -317,6 +331,12 @@ test('native validation, browser ownership and professional-case boundaries reje
 test('native registrations clean up, restore and survive actual back-forward caching', async ({
   page,
 }, testInfo) => {
+  if (!process.env.PULSE_WEBMCP_URL) {
+    // Prime Vinext's public HTML cache so this test can run on its own.
+    const warmup = await page.request.get('/webmcp');
+    expect(warmup.ok()).toBe(true);
+    await warmup.dispose();
+  }
   await page.goto('/webmcp');
   await ready(page);
   await expect(
@@ -352,12 +372,16 @@ test('native registrations clean up, restore and survive actual back-forward cac
   await page.goto('/llms.txt');
   await page.goBack({ waitUntil: 'commit' });
   await ready(page);
-  const restored = await page.evaluate(
-    () =>
-      (window as unknown as { pulseRestored?: boolean }).pulseRestored === true,
-  );
+  const { restored, notRestoredReasons } = await page.evaluate(() => {
+    const navigation = performance.getEntriesByType('navigation')[0];
+    return {
+      restored:
+        (window as unknown as { pulseRestored?: boolean }).pulseRestored === true,
+      notRestoredReasons: navigation?.toJSON().notRestoredReasons ?? null,
+    };
+  });
   await testInfo.attach('back-forward-cache', {
-    body: JSON.stringify({ restored }),
+    body: JSON.stringify({ restored, notRestoredReasons }),
     contentType: 'application/json',
   });
   if (!process.env.PULSE_WEBMCP_URL) expect(restored).toBe(true);
